@@ -1,6 +1,9 @@
-import reflex as rx
-from app.states.auth_state import AuthState
 import uuid
+import reflex as rx
+from sqlmodel import select
+from typing import List
+from app.states.auth_state import AuthState
+from app.models.models import AuctionItem
 
 GLOBAL_ITEMS: dict[str, dict[str, str]] = {}
 
@@ -28,7 +31,15 @@ class ItemState(rx.State):
     @rx.var
     def all_items(self) -> list[dict[str, str]]:
         """Get all items available in the marketplace."""
-        return list(GLOBAL_ITEMS.values())
+        with rx.session() as session:
+            # Query the database for all active AuctionItem records
+            db_items: List[AuctionItem] = session.exec(
+                select(AuctionItem).where(AuctionItem.active == True)
+            ).all()
+
+            # Convert SQLModel objects to dictionaries for easier frontend display
+            # We use .model_dump() (or .dict() depending on Pydantic version)
+            return [item.model_dump() for item in db_items]
 
     @rx.var
     def current_item(self) -> dict[str, str]:
@@ -75,17 +86,20 @@ class ItemState(rx.State):
         if not self.form_title or not self.form_price:
             return rx.toast.error("Title and Price are required.")
         item_id = str(uuid.uuid4())
-        new_item = {
-            "id": item_id,
-            "owner": auth_state.current_username,
-            "title": self.form_title,
-            "description": self.form_description,
-            "price": self.form_price,
-            "image_url": self.form_image_url,
-            "category": self.form_category,
-            "created_at": str(uuid.uuid4()),
-        }
-        GLOBAL_ITEMS[item_id] = new_item
+        new_item = AuctionItem(
+            id=item_id,
+            owner=auth_state.current_username,
+            title=self.form_title,
+            description=self.form_description,
+            price=self.form_price,
+            image_url=self.form_image_url,
+            category=self.form_category,
+        )
+        with rx.session() as session:
+            session.add(new_item)
+            session.commit()
+
+        # once added the Item, restart the form
         self._reset_form()
         return rx.redirect("/dashboard")
 

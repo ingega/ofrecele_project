@@ -37,24 +37,24 @@ def error_alert() -> rx.Component:
 def login_form() -> rx.Component:
     return rx.el.div(
         rx.el.div(
-            rx.el.h2("Welcome Back", class_name="text-2xl font-bold text-gray-900"),
-            rx.el.p("Sign in to access your auctions", class_name="text-gray-500 mt-2"),
+            rx.el.h2("Bienvenido!", class_name="text-2xl font-bold text-gray-900"),
+            rx.el.p("Haz login y ofrecele!", class_name="text-gray-500 mt-2"),
             class_name="text-center mb-8",
         ),
         error_alert(),
         form_field(
-            "Email Address", "you@example.com", "email", AuthState.set_login_email
+            "Email", "you@example.com", "email", AuthState.set_login_email
         ),
         form_field("Password", "••••••••", "password", AuthState.set_login_password),
         rx.el.button(
-            "Sign In",
+            "login",
             on_click=AuthState.login,
             class_name="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5",
         ),
         rx.el.div(
-            rx.el.span("Don't have an account? ", class_name="text-gray-500"),
+            rx.el.span("Todavia no tienes cuenta? ", class_name="text-gray-500"),
             rx.el.a(
-                "Create one",
+                "Crea una",
                 href="/register",
                 class_name="font-semibold text-blue-600 hover:text-blue-700 transition-colors",
             ),
@@ -69,33 +69,33 @@ def register_form() -> rx.Component:
         rx.el.div(
             rx.el.h2("Create Account", class_name="text-2xl font-bold text-gray-900"),
             rx.el.p(
-                "Start bidding on crypto assets today", class_name="text-gray-500 mt-2"
+                "Comienza a ofrecer crypto por articulos", class_name="text-gray-500 mt-2"
             ),
             class_name="text-center mb-8",
         ),
         error_alert(),
-        form_field("Username", "cryptoking", "text", AuthState.set_register_username),
+        form_field("Usuario", "cryptoking", "text", AuthState.set_register_username),
         form_field(
-            "Email Address", "you@example.com", "email", AuthState.set_register_email
+            "Correo", "you@example.com", "email", AuthState.set_register_email
         ),
         form_field(
             "Password", "Min. 6 characters", "password", AuthState.set_register_password
         ),
         form_field(
-            "Confirm Password",
-            "Repeat password",
+            "Confirma Password",
+            "Repite password",
             "password",
             AuthState.set_register_confirm_password,
         ),
         rx.el.button(
-            "Create Account",
+            "Crea cuenta",
             on_click=AuthState.register,
             class_name="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5",
         ),
         rx.el.div(
-            rx.el.span("Already have an account? ", class_name="text-gray-500"),
+            rx.el.span("Ya tienes cuenta? ", class_name="text-gray-500"),
             rx.el.a(
-                "Sign in",
+                "Ingresa",
                 href="/login",
                 class_name="font-semibold text-blue-600 hover:text-blue-700 transition-colors",
             ),

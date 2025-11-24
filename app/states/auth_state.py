@@ -2,7 +2,12 @@ import reflex as rx
 import hashlib
 import os
 import re
-from typing import Optional
+
+from sqlalchemy.testing.suite.test_reflection import users
+from sqlmodel import select
+from typing import Optional, List
+
+from app.models.models import UserDB
 
 GLOBAL_USERS = {}
 
@@ -67,31 +72,48 @@ class AuthState(rx.State):
 
     @rx.event
     async def login(self):
-        """Handle user login."""
+        """Handle user login by querying the database and verifying the password."""
         if not self.login_email or not self.login_password:
-            self.error_message = "Please fill in all fields."
+            self.error_message = "Por favor llena todos los campos obligatorios."
             return
-        user_found = None
-        found_username = None
-        for username, data in GLOBAL_USERS.items():
-            if data["email"] == self.login_email:
-                user_found = data
-                found_username = username
-                break
-        if not user_found:
-            self.error_message = "Invalid email or password."
+
+        # 1. Query the database for the user by email
+        db_user: Optional[UserDB] = None
+        with rx.session() as session:
+            db_user = session.exec(
+                select(UserDB).where(UserDB.email == self.login_email)
+            ).first()
+
+        # 2. Check if a user was found
+        if not db_user:
+            # Always return a generic error message for security
+            self.error_message = "email o password incorrecto."
             return
-        stored_hash = user_found["password_hash"]
-        salt = user_found["salt"]
-        input_hash, _ = self._hash_password(self.login_password, salt)
+
+        # 3. Retrieve stored salt and hash (must be converted back to bytes)
+        # NOTE: UserDB model's salt and h_password are as strings
+        try:
+            stored_salt = db_user.salt.encode('utf-8')  # stored as hex string/text
+            stored_hash = db_user.h_password.encode('utf-8')  # hex string/text
+        except AttributeError:
+            # If the fields are stored directly as bytes/BLOB, just use them:
+            stored_salt = db_user.salt
+            stored_hash = db_user.h_password
+
+        # 4. Hash the input password using the stored salt
+        input_hash, _ = self._hash_password(self.login_password, stored_salt)
+
+        # 5. Compare the input hash with the stored hash
         if input_hash == stored_hash:
+            # Login Success
             self.is_authenticated = True
-            self.current_username = found_username
-            self.current_email = self.login_email
+            self.current_username = db_user.username
+            self.current_email = db_user.email
             self.error_message = ""
             self.login_password = ""
             return rx.redirect("/")
         else:
+            # Password mismatch
             self.error_message = "Invalid email or password."
 
     @rx.event
@@ -116,19 +138,20 @@ class AuthState(rx.State):
         if self.register_password != self.register_confirm_password:
             self.error_message = "Passwords do not match."
             return
-        if self.register_username in GLOBAL_USERS:
-            self.error_message = "Username already taken."
-            return
-        for data in GLOBAL_USERS.values():
-            if data["email"] == self.register_email:
-                self.error_message = "Email already registered."
-                return
+
+        # add the salt and hash the password
         pwd_hash, salt = self._hash_password(self.register_password)
-        GLOBAL_USERS[self.register_username] = {
-            "email": self.register_email,
-            "password_hash": pwd_hash,
-            "salt": salt,
-        }
+        # finally add tue user to db
+        new_user = UserDB(
+            username=self.register_username,
+            email=self.register_email,
+            salt=salt,
+            h_password=pwd_hash
+        )
+        with rx.session() as session:
+            session.add(new_user)
+            session.commit()
+
         self.is_authenticated = True
         self.current_username = self.register_username
         self.current_email = self.register_email

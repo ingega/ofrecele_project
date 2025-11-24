@@ -22,17 +22,17 @@ app = rx.App(
         ),
     ],
 )
-app.add_page(index_page, route="/", title="Offer Me Crypto | Home")
+app.add_page(index_page, route="/", title="Ofrecele Crypto | Home")
 app.add_page(
     login_page,
     route="/login",
-    title="Login | Offer Me Crypto",
+    title="Login | Ofrecele Crypto",
     on_load=AuthState.redirect_if_authenticated,
 )
 app.add_page(
     register_page,
     route="/register",
-    title="Register | Offer Me Crypto",
+    title="Registro | ofrecele Crypto",
     on_load=AuthState.redirect_if_authenticated,
 )
 app.add_page(
@@ -57,7 +57,7 @@ app.add_page(
     item_detail_page, route="/items/[item_id]", title="Item Details | Offer Me Crypto"
 )
 app.add_page(
-    marketplace_page, route="/marketplace", title="Marketplace | Offer Me Crypto"
+    marketplace_page, route="/marketplace", title="Marketplace | ofrecele Crypto"
 )
 app.add_page(
     my_offers_page,

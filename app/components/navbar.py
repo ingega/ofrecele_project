@@ -7,12 +7,12 @@ def navbar() -> rx.Component:
         rx.el.div(
             rx.el.a(
                 rx.el.div(
-                    rx.icon("coins", class_name="h-8 w-8 text-blue-600"),
-                    rx.el.span(
-                        "Offer Me Crypto",
-                        class_name="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text",
+                    rx.el.img(
+                        src="ofrecele_logo.jpeg",
+                        alt="ofrecele Crypto",
+                        class_name="h-32 w-auto",  # Adjust height and let width scale proportionally
                     ),
-                    class_name="flex items-center gap-2",
+                    class_name="flex items-left pt-16",
                 ),
                 href="/",
                 class_name="flex items-center",
@@ -22,7 +22,7 @@ def navbar() -> rx.Component:
                     AuthState.is_authenticated,
                     rx.el.div(
                         rx.el.span(
-                            f"Hello, {AuthState.current_username}",
+                            f"Hola, {AuthState.current_username}",
                             class_name="text-gray-600 font-medium hidden sm:block",
                         ),
                         rx.el.a(
@@ -31,8 +31,8 @@ def navbar() -> rx.Component:
                             class_name="text-gray-600 font-medium hover:text-blue-600 transition-colors mr-2",
                         ),
                         rx.el.button(
-                            rx.icon("log-out", class_name="h-4 w-4 mr-2"),
-                            "Sign Out",
+                            rx.icon("salir", class_name="h-4 w-4 mr-2"),
+                            "Salir",
                             on_click=AuthState.logout,
                             class_name="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors",
                         ),
@@ -40,12 +40,12 @@ def navbar() -> rx.Component:
                     ),
                     rx.el.div(
                         rx.el.a(
-                            "Log In",
+                            "Ingresa",
                             href="/login",
                             class_name="px-4 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors",
                         ),
                         rx.el.a(
-                            "Get Started",
+                            "Empecemos",
                             href="/register",
                             class_name="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md",
                         ),
