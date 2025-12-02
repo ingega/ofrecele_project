@@ -26,8 +26,8 @@ def navbar() -> rx.Component:
                             class_name="text-gray-600 font-medium hidden sm:block",
                         ),
                         rx.el.a(
-                            "Marketplace",
-                            href="/marketplace",
+                            "Dashboard",
+                            href="/dashboard",
                             class_name="text-gray-600 font-medium hover:text-blue-600 transition-colors mr-2",
                         ),
                         rx.el.button(

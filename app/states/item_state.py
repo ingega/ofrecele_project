@@ -1,7 +1,7 @@
 import uuid
 import reflex as rx
 from sqlmodel import select
-from typing import List
+from typing import List, Dict, Any
 from app.states.auth_state import AuthState
 from app.models.models import AuctionItem
 
@@ -22,11 +22,23 @@ class ItemState(rx.State):
     categories: list[str] = ["NFTs", "Tokens", "Domain Names", "Other"]
 
     @rx.var
-    async def my_items(self) -> list[dict[str, str]]:
-        """Get items owned by the current user."""
+    async def my_items(self) -> List[Dict[str, Any]]:
+        """Get items owned by the current user from the database."""
+        # 1. Get the current username from the authentication state
         auth_state = await self.get_state(AuthState)
         username = auth_state.current_username
-        return [item for item in GLOBAL_ITEMS.values() if item["owner"] == username]
+
+        if not username:
+            return []
+
+        # 2. Query the database for items matching the owner
+        with rx.session() as session:
+            db_items: List[AuctionItem] = session.exec(
+                select(AuctionItem).where(AuctionItem.owner == username)
+            ).all()
+
+            # 3. Convert SQLModel objects to dictionaries for the frontend
+            return [item.model_dump() for item in db_items]
 
     @rx.var
     def all_items(self) -> list[dict[str, str]]:
@@ -42,12 +54,34 @@ class ItemState(rx.State):
             return [item.model_dump() for item in db_items]
 
     @rx.var
-    def current_item(self) -> dict[str, str]:
-        """Get the item details for the current page params."""
+    def current_item(self) -> Dict[str, Any]:
+        """
+        Get the item details for the current page params by querying the database.
+
+        This method is triggered automatically when the /auctions/[item_id] route is accessed.
+        """
+
+        # 1. Get the dynamic parameter from the URL
         item_id = self.router.page.params.get("item_id")
-        if not item_id or item_id not in GLOBAL_ITEMS:
-            return {}
-        return GLOBAL_ITEMS[item_id]
+
+        if not item_id:
+            return {}  # Return empty if no ID is in the URL
+
+        # 2. Query the database for the item with the matching ID
+        with rx.session() as session:
+            # Note: Assuming your AuctionItem.id is a string (UUID) based on your create_item
+            item = session.exec(
+                select(AuctionItem).where(AuctionItem.id == item_id)
+            ).first()
+
+            # 3. Check if the item exists and return it as a dictionary
+            if item:
+                # Use model_dump() (or .dict()) to convert the SQLModel object to a dictionary
+                # that the frontend can easily read and render.
+                return item.model_dump()
+            else:
+                # Return empty dictionary if item is not found in the DB
+                return {}
 
     @rx.event
     def set_form_title(self, value: str):

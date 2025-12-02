@@ -62,6 +62,6 @@ app.add_page(
 app.add_page(
     my_offers_page,
     route="/dashboard/offers",
-    title="My Offers | Offer Me Crypto",
+    title="dashboard | Offer Me Crypto",
     on_load=AuthState.check_auth,
 )
